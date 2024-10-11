@@ -30,7 +30,8 @@ class UserController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function userAuthenticated() {
-        return response()->json(['user' => auth()->user()], 200);
+        $user = User::with('roles')->find(auth()->user()->id);
+        return response()->json(['user' => $user], 200);
     }
 
     /**
@@ -41,7 +42,7 @@ class UserController extends Controller
      */
     public function show($id)
     {
-        $user = User::find($id);
+        $user = User::with('roles')->find($id);
         return response()->json(['user' => $user], 200);
     }
 
