@@ -22,6 +22,7 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'last_name',
         'email',
         'password',
     ];
@@ -50,6 +51,11 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function getFullNameAttribute()
+    {
+        return $this->attributes['name'] . ' ' . $this->attributes['last_name'];
     }
 
     public function setEmailAttribute($value)

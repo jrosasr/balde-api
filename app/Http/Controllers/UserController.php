@@ -56,6 +56,7 @@ class UserController extends Controller
     {
         $request->validate([
             'name' => ['required', 'string', 'max:100'],
+            'last_name' => ['required', 'string', 'max:100'],
             'email' => ['required', 'string', 'email', 'max:100', 'unique:users'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'role' => ['required'],
@@ -63,6 +64,10 @@ class UserController extends Controller
             'name.required' => 'El nombre es obligatorio',
             'name.string' => 'El nombre debe ser una cadena de caracteres',
             'name.max' => 'El nombre no debe superar los 100 caracteres',
+
+            'last_name.required' => 'El apellido es obligatorio',
+            'last_name.string' => 'El apellido debe ser una cadena de caracteres',
+            'last_name.max' => 'El apellido no debe superar los 100 caracteres',
 
             'email.required' => 'El email es obligatorio',
             'email.string' => 'El email debe ser una cadena de caracteres',
@@ -78,6 +83,7 @@ class UserController extends Controller
 
         $user = User::create([
             'name' => $request->name,
+            'last_name' => $request->last_name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
@@ -98,6 +104,7 @@ class UserController extends Controller
     {
         $request->validate([
             'name' => ['required', 'string', 'max:100'],
+            'last_name' => ['required', 'string', 'max:100'],
             'email' => ['required', 'string', 'email', 'max:100', 'unique:'.User::class],
             'password' => ['confirmed', Rules\Password::defaults()],
             'role' => ['required'],
@@ -105,6 +112,10 @@ class UserController extends Controller
             'name.required' => 'El nombre es obligatorio',
             'name.string' => 'El nombre debe ser una cadena de caracteres',
             'name.max' => 'El nombre no debe superar los 100 caracteres',
+
+            'last_name.required' => 'El apellido es obligatorio',
+            'last_name.string' => 'El apellido debe ser una cadena de caracteres',
+            'last_name.max' => 'El apellido no debe superar los 100 caracteres',
 
             'email.required' => 'El email es obligatorio',
             'email.string' => 'El email debe ser una cadena de caracteres',
@@ -119,6 +130,7 @@ class UserController extends Controller
 
         $user = User::find($id);
         $user->name = $request->name;
+        $user->last_name = $request->last_name;
         $user->email = $request->email;
 
         if ($request->password) {
