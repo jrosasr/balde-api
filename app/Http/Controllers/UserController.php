@@ -8,10 +8,10 @@ use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
-    public function __construct() {
-        $this->middleware('role:reviewer', ['only' => ['index']]);
-        $this->middleware('role:admin', ['only' => ['index', 'store', 'update', 'destroy']]);
-    }
+    protected $middleware = [
+        'role:reviewer' => ['only' => ['index']],
+        'role:admin' => ['only' => ['index', 'store', 'update', 'destroy']],
+    ];
 
     /**
      * Devolver una lista de todos los usuarios.
@@ -22,6 +22,15 @@ class UserController extends Controller
     {
         $users = User::all();
         return response()->json(['users' => $users], 200);
+    }
+
+    /**
+     * Devolver el usuario autenticado actual.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function userAuthenticated() {
+        return response()->json(['user' => auth()->user()], 200);
     }
 
     /**
