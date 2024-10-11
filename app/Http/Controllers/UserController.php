@@ -6,7 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
-class AdminUserController extends Controller
+class UserController extends Controller
 {
     public function __construct() {
         $this->middleware('role:reviewer', ['only' => ['index']]);
