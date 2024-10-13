@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
@@ -65,7 +66,7 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function userAuthenticated() {
+    public function getAuthenticatedUser() {
         $user = User::with('roles')->find(auth()->user()->id);
         return response()->json(['user' => $user], 200);
     }
@@ -92,16 +93,23 @@ class UserController extends Controller
     {
         $request->validate($this->userValidations, $this->translatedValidations);
 
-        $user = User::create([
-            'name' => $request->name,
-            'last_name' => $request->last_name ?? '',
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
+        try {
 
-        $user->assignRole($request->role);
+            $user = User::create([
+                'name' => $request->name,
+                'last_name' => $request->last_name ?? '',
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+            ]);
+    
+            $user->assignRole($request->role);
 
-        return response()->json(['message' => 'Usuario creado exitosamente'], 201);
+            return response()->json(['message' => 'Usuario creado exitosamente'], 201);
+        } catch (\Exception $e) {
+            Log::error($e);
+
+            return response()->json(['message' => 'Ocurrió un error al procesar la solicitud'], 500);
+        }
     }
 
     /**
@@ -121,20 +129,26 @@ class UserController extends Controller
 
         $request->validate($this->userValidations, $this->translatedValidations);
 
-        $user = User::find($id);
-        $user->name = $request->name;
-        $user->last_name = $request->last_name ?? '';
-        $user->email = $request->email;
+        try {
+            $user = User::find($id);
+            $user->name = $request->name;
+            $user->last_name = $request->last_name ?? '';
+            $user->email = $request->email;
 
-        if ($request->password) {
-            $user->password = Hash::make($request->password);
+            if ($request->password) {
+                $user->password = Hash::make($request->password);
+            }
+
+            $user->save();
+
+            $user->syncRoles($request->role);
+
+            return response()->json(['message' => 'Usuario actualizado exitosamente'], 200);
+        } catch (\Exception $e) {
+            Log::error($e);
+
+            return response()->json(['message' => 'Ocurrió un error al procesar la solicitud'], 500);
         }
-
-        $user->save();
-
-        $user->syncRoles($request->role);
-
-        return response()->json(['message' => 'Usuario actualizado exitosamente'], 200);
     }
 
     /**
@@ -145,8 +159,16 @@ class UserController extends Controller
      */
     public function destroy($id)
     {
-        $user = User::find($id);
-        $user->delete();
-        return response()->json(['message' => 'Usuario eliminado exitosamente'], 200);
+        try {
+            $user = User::find($id);
+
+            $user->delete();
+
+            return response()->json(['message' => 'Usuario eliminado exitosamente'], 200);
+        } catch (\Exception $e) {
+            Log::error($e);
+
+            return response()->json(['message' => 'Ocurrió un error al procesar la solicitud'], 500);
+        }
     }
 }

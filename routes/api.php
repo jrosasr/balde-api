@@ -6,7 +6,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\RoleController;
 
 Route::group(['middleware' => 'auth:sanctum'], function () {
-    Route::get('/user-authenticated', [UserController::class, 'userAuthenticated']);
+    Route::get('/user-authenticated', [UserController::class, 'getAuthenticatedUser']);
 
     Route::resource('users', UserController::class)->except(['create', 'edit']);
 
