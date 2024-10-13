@@ -14,6 +14,41 @@ class UserController extends Controller
         'role:admin' => ['only' => ['index', 'store', 'update', 'destroy']],
     ];
 
+    protected $userValidations = [];
+
+    protected $translatedValidations = [];
+
+    public function __construct()
+    {
+        $this->userValidations = [
+            'name' => ['required', 'string', 'max:100'],
+            'last_name' => ['nullable', 'string', 'max:100'],
+            'email' => ['required', 'string', 'email', 'max:100', 'unique:users'],
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'role' => ['required'],
+        ];
+
+        $this->translatedValidations = [
+            'name.required' => 'El nombre es obligatorio',
+            'name.string' => 'El nombre debe ser una cadena de caracteres',
+            'name.max' => 'El nombre no debe superar los 100 caracteres',
+    
+            'last_name.string' => 'El apellido debe ser una cadena de caracteres',
+            'last_name.max' => 'El apellido no debe superar los 100 caracteres',
+    
+            'email.required' => 'El email es obligatorio',
+            'email.string' => 'El email debe ser una cadena de caracteres',
+            'email.email' => 'El email debe ser un correo electrónico válido',
+            'email.max' => 'El email no debe superar los 100 caracteres',
+            'email.unique' => 'El email ya se encuentra en uso',
+
+            'password.required' => 'La contraseña es obligatoria',
+            'password.confirmed' => 'La confirmación de la contraseña no coincide',
+    
+            'role.required' => 'Debe elegir un rol',
+        ];
+    }
+
     /**
      * Devolver una lista de todos los usuarios.
      *
@@ -55,36 +90,11 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => ['required', 'string', 'max:100'],
-            'last_name' => ['required', 'string', 'max:100'],
-            'email' => ['required', 'string', 'email', 'max:100', 'unique:users'],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'role' => ['required'],
-        ], [
-            'name.required' => 'El nombre es obligatorio',
-            'name.string' => 'El nombre debe ser una cadena de caracteres',
-            'name.max' => 'El nombre no debe superar los 100 caracteres',
-
-            'last_name.required' => 'El apellido es obligatorio',
-            'last_name.string' => 'El apellido debe ser una cadena de caracteres',
-            'last_name.max' => 'El apellido no debe superar los 100 caracteres',
-
-            'email.required' => 'El email es obligatorio',
-            'email.string' => 'El email debe ser una cadena de caracteres',
-            'email.email' => 'El email debe ser un correo electrónico válido',
-            'email.max' => 'El email no debe superar los 100 caracteres',
-            'email.unique' => 'El email ya se encuentra en uso',
-
-            'password.required' => 'La contraseña es obligatoria',
-            'password.confirmed' => 'Las contraseñas no coinciden',
-
-            'role.required' => 'Debe elegir un rol',
-        ]);
+        $request->validate($this->userValidations, $this->translatedValidations);
 
         $user = User::create([
             'name' => $request->name,
-            'last_name' => $request->last_name,
+            'last_name' => $request->last_name ?? '',
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
@@ -103,35 +113,17 @@ class UserController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $request->validate([
-            'name' => ['required', 'string', 'max:100'],
-            'last_name' => ['required', 'string', 'max:100'],
-            'email' => ['required', 'string', 'email', 'max:100', 'unique:'.User::class],
-            'password' => ['confirmed', Rules\Password::defaults()],
-            'role' => ['required'],
-        ], [
-            'name.required' => 'El nombre es obligatorio',
-            'name.string' => 'El nombre debe ser una cadena de caracteres',
-            'name.max' => 'El nombre no debe superar los 100 caracteres',
+        if (empty($request->password)) {
+            $this->userValidations['password'] = ['nullable'];
+        }
 
-            'last_name.required' => 'El apellido es obligatorio',
-            'last_name.string' => 'El apellido debe ser una cadena de caracteres',
-            'last_name.max' => 'El apellido no debe superar los 100 caracteres',
+        $this->userValidations['email'] = ['required', 'string', 'email', 'max:100'];
 
-            'email.required' => 'El email es obligatorio',
-            'email.string' => 'El email debe ser una cadena de caracteres',
-            'email.email' => 'El email debe ser un correo electrónico válido',
-            'email.max' => 'El email no debe superar los 100 caracteres',
-            'email.unique' => 'El email ya se encuentra en uso',
-
-            'password.confirmed' => 'Las contraseñas no coinciden',
-
-            'role.required' => 'Debe elegir un rol',
-        ]);
+        $request->validate($this->userValidations, $this->translatedValidations);
 
         $user = User::find($id);
         $user->name = $request->name;
-        $user->last_name = $request->last_name;
+        $user->last_name = $request->last_name ?? '';
         $user->email = $request->email;
 
         if ($request->password) {
